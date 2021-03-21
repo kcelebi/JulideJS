@@ -1,10 +1,11 @@
 
-let list, imgs;
+let list, imgs, len;
 
 function setup() {
     createCanvas(800,200);
     list = new LinkedList(null,null);
-    for(var i=1; i < 9; i++){
+    len = 8;
+    for(var i=1; i < len+1; i++){
         list.push(new Node(null, loadImage('img/logo' + i + '.png'), [(i-1)*60, 30]));
     }
     list.set();
@@ -12,22 +13,30 @@ function setup() {
 
 function draw() {
     background(255);
-    image(list.curr.value, list.curr.coord[0],list.curr.coord[1], 50,50);
-    list.next();
-    update();
+    for(var i=0; i < len; i++){
+        image(list.curr.value, list.curr.coord[0],list.curr.coord[1], 50,50);
+        console.log(list.curr.coord);
+        update(list.curr);
+        list.next();
+    }
+    list.begin();
+    
 }
 
-function update(){
-    list.curr.coord[0] += 1; //increment pos
+function update(node){
+    node.coord[0] += 1; //increment pos
 
-    if(!inBounds(list.curr.coord[0])){
-        list.curr.coord[0] = -50;
+    if(!inBounds(node.coord[0])){
+        node.coord[0] = -50;
     }
 
 }
 
 function inBounds(x) {
-
+    if(x > width){
+        return false;
+    }
+    return true;
 }
 
 class Node {
