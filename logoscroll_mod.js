@@ -1,8 +1,11 @@
-let on, off, len, dimsx, dimsy, dims;
+let on, off, len, dimsx, dimsy, dims, play, dir;
 
 function setup() {
 	createCanvas(1000,200);
+
 	len = 8;
+	play = 0;
+	dir = 1;
 
 	dimsx = [225,338,224,546,360,216,800,640];
     dimsy = [225,149,225,155,228,206,800,480];
@@ -16,29 +19,26 @@ function setup() {
     var dist = 0;
     var i=1;
     while(dist < width){
-        on.push(new Node(null, null, loadImage('img/logo' + i + '.png'), [dist, 50]));
+        on.push(new Node(null, null, loadImage('img/logo' + i + '.png'), [dist, 50], i));
         dist += dims[i-1];
         console.log('img/logo' + i + '.png in ON');
-        console.log("Dist: " + dims[i-1]);
         i++;
     }
 
     while(i < len+1){
-    	off.push(new Node(null, null, loadImage('img/logo' + i + '.png'), [dims[i],50]));
-    	console.log('img/logo' + i + '.png in OFF');
+    	off.push(new Node(null, null, loadImage('img/logo' + i + '.png'), [dims[i-1],50], i));
+    	console.log('img/logo' + i + '.png (' + dims[i-1] + ') in OFF');
     	i++;
     }
 }
 
 function draw() {
 	background(255);
-	var i=0;
 	while(on.curr != null){
-        image(on.curr.value, on.curr.coord[0], on.curr.coord[1], dims[i], height-100);
+        image(on.curr.value, on.curr.coord[0], on.curr.coord[1], dims[on.curr.ind-1], height-100);
 
-        update(on.curr,i);
+        update(on.curr);
         on.next();
-        i++;
     }
     on.begin();
 
@@ -46,19 +46,27 @@ function draw() {
     line(0, height, width, height);
 }
 
-function update(node, i) {
-	node.coord[0] +=1;
+function update(node) {
+	if(play == 1){
+		node.coord[0] += dir;
+	}
 	if(!inBounds(node.coord[0])){
-		node.coord[0] = dims[i]; //nullify x coord
+		node.coord[0] = dims[node.ind-1]; //nullify x coord
+		console.log("ON -->  OFF: " + node.ind);
         off.push(on.pop(node)); //pop from on, push to off
+        console.log("ON: " + printLL(on));
+		console.log("OFF: " + printLL(off));
     }
-    //console.log("onhead: " + on.head.coord[0]);
-    //console.log("offhead: " + off.head.coord[0]);
-    console.log('on.head: ' + on.head == null);
-    console.log('off.head: ' + off.head == null);
-    if(on.head.coord[0]+50 > off.head.coord[0]){
+
+    //console.log("OFF Logo " + off.head.ind + ": " + off.head.coord[0]);
+    //console.log("ON Logo " + on.head.ind + ": " + on.head.coord[0]);
+    if(!off.isNull() && on.head.coord[0] > off.head.coord[0]){
     	off.head.coord[0] *= -1; //set the coord
+    	console.log("OFF -->  ON: " + off.head.ind);
     	on.push(off.pop(off.head)); //pop from off, push to on
+    	console.log("ON: " + printLL(on));
+    	console.log("OFF: " + printLL(off));
+    	
     }
 }
 
@@ -78,16 +86,44 @@ function preCalcDims() {
 	return newdims;
 }
 
+function printLL(l){
+	var list = l.copyList();
+	var str = "[";
+	while(list.curr!= null){
+		str += ("Logo " + list.curr.ind) + ", ";
+		list.next();
+	}
+	str += "]";
+	return str;
+}
+
+function keyPressed() {
+	if(keyCode == LEFT_ARROW){
+		dir = -1;
+	}
+	else if(keyCode == RIGHT_ARROW){
+		dir = 1;
+	}
+	else if(keyCode == RETURN){
+		if(play == 0){
+			play = 1;
+		}else{
+			play = 0;
+		}
+	}
+}
+
 class Node {
-    constructor(next, prev, value, coord) {
+    constructor(next, prev, value, coord, ind) {
         this.next = next;
         this.prev = prev;
         this.value = value;
         this.coord = coord;
+        this.ind = ind;
     }
 
     isEqual(node) {
-    	return this.value == node.value;
+    	return this.ind == node.ind;
     }
 }
 
@@ -114,10 +150,13 @@ class LinkedList {
     //pops given node and returns
     pop(node) {
     	if (node.next != null && node.prev != null) {
-    		var next = this.node.next;
-	    	var prev = this.node.prev;
-	    	this.prev.next = next;
-	    	this.next.prev = prev;
+    		var next = node.next;
+	    	var prev = node.prev;
+	    	prev.next = next;
+	    	next.prev = prev;
+
+	    	node.next = null;
+	    	node.prev = null;
     	}
     	else if (node.isEqual(this.head)) {
     		//implies prev is null
@@ -151,6 +190,14 @@ class LinkedList {
             node.prev = this.end;
             this.end = this.end.next;
         }
+    }
+
+    copyList() {
+    	return new LinkedList(this.head, this.end);
+    }
+
+    isNull() {
+    	return this.head == null;
     }
 
     /*set() {
