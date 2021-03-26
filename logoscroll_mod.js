@@ -1,7 +1,7 @@
 let on, off, len, dimsx, dimsy, dims, play, dir;
 
 function setup() {
-	createCanvas(1000,200);
+	createCanvas(windowWidth*4/5,200);
 
 	len = 8;
 	play = 0;
@@ -19,14 +19,14 @@ function setup() {
     var dist = 0;
     var i=1;
     while(dist < width){
-        on.push(new Node(null, null, loadImage('img/logo' + i + '.png'), [dist, 50], i));
-        dist += dims[i-1];
+        on.push(new Node(null, null, loadImage('img/logo' + i + '.png'), [dist, 1/4*height], i),1);
+        dist += dims[i-1] + 50;
         console.log('img/logo' + i + '.png in ON');
         i++;
     }
 
     while(i < len+1){
-    	off.push(new Node(null, null, loadImage('img/logo' + i + '.png'), [dims[i-1],50], i));
+    	off.push(new Node(null, null, loadImage('img/logo' + i + '.png'), [dims[i-1],1/4*height], i),1);
     	console.log('img/logo' + i + '.png (' + dims[i-1] + ') in OFF');
     	i++;
     }
@@ -35,7 +35,7 @@ function setup() {
 function draw() {
 	background(255);
 	while(on.curr != null){
-        image(on.curr.value, on.curr.coord[0], on.curr.coord[1], dims[on.curr.ind-1], height-100);
+        image(on.curr.value, on.curr.coord[0], on.curr.coord[1], dims[on.curr.ind-1], 1/2*height);
 
         update(on.curr);
         on.next();
@@ -53,17 +53,20 @@ function update(node) {
 	if(!inBounds(node.coord[0])){
 		node.coord[0] = dims[node.ind-1]; //nullify x coord
 		console.log("ON -->  OFF: " + node.ind);
-        off.push(on.pop(node)); //pop from on, push to off
+        off.push(on.pop(node),1); //pop from on, push to off
         console.log("ON: " + printLL(on));
 		console.log("OFF: " + printLL(off));
     }
 
     //console.log("OFF Logo " + off.head.ind + ": " + off.head.coord[0]);
     //console.log("ON Logo " + on.head.ind + ": " + on.head.coord[0]);
-    if(!off.isNull() && on.head.coord[0] > off.head.coord[0]){
-    	off.head.coord[0] *= -1; //set the coord
+    if(!off.isNull() && on.head.coord[0] > 50){
+    	
     	console.log("OFF -->  ON: " + off.head.ind);
-    	on.push(off.pop(off.head)); //pop from off, push to on
+    	console.log("DIST_ON: " + on.head.coord[0]);
+    	console.log("DIST_OFF: " + off.head.coord[0]);
+    	off.head.coord[0] *= -1; //set the coord
+    	on.push(off.pop(off.head),0); //pop from off, push to on
     	console.log("ON: " + printLL(on));
     	console.log("OFF: " + printLL(off));
     	
@@ -178,17 +181,22 @@ class LinkedList {
     	return node;
     }
 
-    //add to end
-    push(node) {
+    //add to head, loc = 0, end loc = 1
+    push(node, loc) {
         if(this.head == null){
             this.head = node;
             this.curr = node;
             this.end = node;
         }
-        else{
-            this.end.next = node;
-            node.prev = this.end;
-            this.end = this.end.next;
+        else if(loc == 0){
+        	this.head.prev = node;
+        	node.next = this.head;
+        	this.head = this.head.prev;
+        }
+        else if(loc == 1){
+        	this.end.next = node;
+        	node.prev = this.end;
+        	this.end = this.end.next;
         }
     }
 
