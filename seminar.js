@@ -1,4 +1,4 @@
-let on, off, text;
+let on, off, text, len;
 
 function preload() {
 	text = loadStrings('seminar.txt');
@@ -9,6 +9,36 @@ function setup() {
 	on = new LinkedList(null,null);
 	off = new LinkedList(null,null);
 
+	len = 0;
+	var size = 0;
+	var core_ind = 0;
+	for(var i=0; i < text.length; i++){
+		if(size < height){
+			//on screen
+			if(text[i][0].equals("$")){
+				core_ind = 0;
+				continue;
+			}
+			
+			switch(core_ind){
+				case 0:
+					//date
+					on.push(new Seminar(text[i]),1);
+					break;
+				case 1:
+					//title
+					on.end.title = text[i];
+					break;
+			}
+			core_ind ++;
+		}
+		else{
+			//off screen
+
+		}
+
+		size += 200; //uniform height for now
+	}
 }
 
 function draw() {
