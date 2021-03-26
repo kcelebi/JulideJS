@@ -19,7 +19,7 @@ function setup() {
 				core_ind = 0;
 				continue;
 			}
-			
+
 			switch(core_ind){
 				case 0:
 					//date
@@ -29,6 +29,9 @@ function setup() {
 					//title
 					on.end.title = text[i];
 					break;
+				case 2:
+					//venue
+					
 			}
 			core_ind ++;
 		}
