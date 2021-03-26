@@ -1,16 +1,27 @@
-let on, off;
+let on, off, text;
 
+function preload() {
+	text = loadStrings('seminar.txt');
+}
 function setup() {
 	createCanvas(800,800);
 
 	on = new LinkedList(null,null);
 	off = new LinkedList(null,null);
 
-
 }
 
 function draw() {
 	background(255);
+}
+
+class Seminar {
+	constructor(date, title, venue, loc) {
+		this.date = date;
+		this.title = title;
+		this.venue = venue;
+		this.loc = loc;
+	}
 }
 
 class Node {
